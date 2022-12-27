@@ -10,4 +10,4 @@ COPY . .
 RUN cargo install --path .
 
 # Run the web service on container startup.
-CMD ["rust_mongo"]
+CMD ["r_mongo"]
