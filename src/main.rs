@@ -19,7 +19,8 @@ async fn main() -> std::io::Result<()> {
         // .service(get_location)
         // .service(get_locations)
     })
-    .bind(("127.0.0.1", 8080))?
+//     .bind(("127.0.0.1", 8080))?
+    .bind("[::1]:8080")?
     .run()
     .await
 }
