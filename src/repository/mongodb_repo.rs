@@ -1,6 +1,6 @@
 #![allow(unused)]
 use std::env;
-extern crate dotenv;
+use dotenv::dotenv;
 use crate::models::location::Location;
 use futures::stream::TryStreamExt;
 use mongodb::{
