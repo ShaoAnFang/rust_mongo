@@ -1,4 +1,6 @@
 #![allow(unused)]
+use std::env;
+extern crate dotenv;
 use crate::models::location::Location;
 use futures::stream::TryStreamExt;
 use mongodb::{
@@ -7,7 +9,6 @@ use mongodb::{
     results::{DeleteResult, InsertOneResult, UpdateResult},
     Client, Collection,
 };
-// use crate::models::user_model::User;
 
 pub struct MongoRepo {
     col: Collection<Location>,
@@ -15,14 +16,14 @@ pub struct MongoRepo {
 
 impl MongoRepo {
     pub async fn init() -> Self {
-        // dotenv().ok();
-        // let uri = match env::var("MONGOURI") {
-        //     Ok(v) => v.to_string(),
-        //     Err(_) => format!("Error loading env variable"),
-        // };
+        dotenv().ok();
+        let uri = match env::var("MONGO_URI") {
+            Ok(v) => v.to_string(),
+            Err(_) => format!("Error loading env variable"),
+        };
         let client_options = ClientOptions::parse(
+            uri
             // "mongodb://127.0.0.1:27017/?directConnection=true&serverSelectionTimeoutMS=2000",
-            "mongodb+srv://paladin:Aa123456@cluster0.cikppna.mongodb.net/?retryWrites=true&w=majority"
         )
         .await
         .expect("error connecting to database");
