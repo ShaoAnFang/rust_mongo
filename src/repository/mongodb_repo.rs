@@ -4,7 +4,7 @@ use dotenv::dotenv;
 use crate::models::location::Location;
 use futures::stream::TryStreamExt;
 use mongodb::{
-    bson::{doc, extjson::de::Error, oid::ObjectId},
+    bson::{self, doc, extjson::de::Error, oid::ObjectId},
     options::{ClientOptions, FindOptions},
     results::{DeleteResult, InsertOneResult, UpdateResult},
     Client, Collection,
