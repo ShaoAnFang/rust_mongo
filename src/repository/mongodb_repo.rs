@@ -78,6 +78,51 @@ impl MongoRepo {
 
         Ok(locations)
     }
+    
+    pub async fn get_random_locations(
+        &self,
+        region: String,
+        count: String,
+    ) -> Result<Vec<Location>, Error> {
+        // let obj_id = ObjectId::parse_str(id).unwrap();
+        // let filter = doc! {"_id": obj_id};
+        // let filter = doc! {"region" : region };
+        let options = FindOptions::builder()
+            .limit(count.parse::<i64>().unwrap())
+            .build();
+
+        let pipeline = vec![
+            // Stage 1: filter documents
+            doc! {
+                "$match": { "region": "桃園市"}
+            },
+            // Stage 2: group documents by age
+            doc! {
+                "$sample": { "size": count.parse::<i64>().unwrap()}
+            },
+        ];
+
+        let mut cursors = self
+            .col
+            .aggregate(pipeline, None)
+            .await
+            .ok()
+            .expect("Error getting list of location");
+        let mut locations: Vec<Location> = Vec::new();
+        while let Some(document) = cursors
+            .try_next()
+            .await
+            .ok()
+            .expect("Error mapping through cursor")
+        {
+            // println!("* {}", document);
+            let location: Location = bson::from_document(document).unwrap();
+            locations.push(location)
+
+        }
+
+        Ok(locations)
+    }
 
     pub async fn post_location(&self, new_location: Location) -> Result<InsertOneResult, Error> {
         let new_doc = Location {
