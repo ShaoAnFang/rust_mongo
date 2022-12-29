@@ -12,6 +12,7 @@ pub fn init(cfg: &mut ServiceConfig) {
         .service(get_location)
         .service(get_locations)
         .service(get_locations2)
+        .service(get_random_locations)
         .service(post_location);
 }
 
@@ -65,6 +66,22 @@ pub async fn get_locations2(
     let count = info.count.clone();
 
     let loaction = db.get_locations(region, count).await;
+
+    match loaction {
+        Ok(user) => HttpResponse::Ok().json(user),
+        Err(err) => HttpResponse::InternalServerError().body(err.to_string()),
+    }
+}
+
+//random/locations/桃園市/5
+#[get("/random/locations/{region}/{count}")]
+pub async fn get_random_locations(db: Data<MongoRepo>, path: Path<(String, String)>) -> HttpResponse {
+    // let region = path.into_inner();
+    let (region, count) = path.into_inner();
+    if region.is_empty() {
+        return HttpResponse::BadRequest().body("invalid region");
+    }
+    let loaction = db.get_random_locations(region, count).await;
 
     match loaction {
         Ok(user) => HttpResponse::Ok().json(user),
