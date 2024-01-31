@@ -1,6 +1,4 @@
 #![allow(unused)]
-use std::env;
-use dotenv::dotenv;
 use crate::models::location::Location;
 use futures::stream::TryStreamExt;
 use mongodb::{
@@ -10,23 +8,18 @@ use mongodb::{
     Client, Collection,
 };
 
+// use crate::models::user_model::User;
+
 pub struct MongoRepo {
     col: Collection<Location>,
 }
 
 impl MongoRepo {
     pub async fn init() -> Self {
-        dotenv().ok();
-        let uri = match env::var("MONGO_URI") {
-            Ok(v) => v.to_string(),
-            Err(_) => format!("Error loading env variable"),
-        };
-        let client_options = ClientOptions::parse(
-            uri
-            // "mongodb://127.0.0.1:27017/?directConnection=true&serverSelectionTimeoutMS=2000",
-        )
-        .await
-        .expect("error connecting to database");
+        let database_url = std::env::var("MONGO_CLIENT").expect(".env MONGO_CLIENT 未設定");
+        let client_options = ClientOptions::parse(database_url)
+            .await
+            .expect("error connecting to database");
         // client_options.app_name = Some("Rust Demo".to_string());
         let client = Client::with_options(client_options).unwrap();
         let database = client.database("travel");
@@ -67,18 +60,18 @@ impl MongoRepo {
             .ok()
             .expect("Error getting list of location");
 
-        while let Some(user) = cursors
+        while let Some(location) = cursors
             .try_next()
             .await
             .ok()
             .expect("Error mapping through cursor")
         {
-            locations.push(user)
+            locations.push(location)
         }
 
         Ok(locations)
     }
-    
+
     pub async fn get_random_locations(
         &self,
         region: String,
@@ -92,11 +85,10 @@ impl MongoRepo {
             .build();
 
         let pipeline = vec![
-            // Stage 1: filter documents
+            // filter documents
             doc! {
                 "$match": { "region": "桃園市"}
             },
-            // Stage 2: group documents by age
             doc! {
                 "$sample": { "size": count.parse::<i64>().unwrap()}
             },
@@ -118,7 +110,6 @@ impl MongoRepo {
             // println!("* {}", document);
             let location: Location = bson::from_document(document).unwrap();
             locations.push(location)
-
         }
 
         Ok(locations)

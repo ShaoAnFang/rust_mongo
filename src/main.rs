@@ -7,8 +7,13 @@ use actix_web::{web::Data, App, HttpServer};
 use api::api::{get_location, get_locations, index, post_location};
 use repository::mongodb_repo::MongoRepo;
 
+use dotenv::dotenv;
+use std::env;
+extern crate dotenv;
+
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
+    dotenv().ok();
     let db = MongoRepo::init().await;
     let db_data = Data::new(db);
     HttpServer::new(move || {
@@ -19,8 +24,7 @@ async fn main() -> std::io::Result<()> {
         // .service(get_location)
         // .service(get_locations)
     })
-//     .bind(("127.0.0.1", 8080))?
-    .bind("0.0.0.0:8080")?
+    .bind(("127.0.0.1", 8080))?
     .run()
     .await
 }

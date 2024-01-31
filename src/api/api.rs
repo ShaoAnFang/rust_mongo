@@ -39,7 +39,7 @@ pub async fn get_location(db: Data<MongoRepo>, path: Path<String>) -> HttpRespon
         Err(err) => HttpResponse::InternalServerError().body(err.to_string()),
     }
 }
-//locations2/桃園市/5
+//locations/桃園市/5
 #[get("/locations/{region}/{count}")]
 pub async fn get_locations(db: Data<MongoRepo>, path: Path<(String, String)>) -> HttpResponse {
     // let region = path.into_inner();
@@ -75,16 +75,22 @@ pub async fn get_locations2(
 
 //random/locations/桃園市/5
 #[get("/random/locations/{region}/{count}")]
-pub async fn get_random_locations(db: Data<MongoRepo>, path: Path<(String, String)>) -> HttpResponse {
+pub async fn get_random_locations(
+    db: Data<MongoRepo>,
+    path: Path<(String, String)>,
+) -> HttpResponse {
     // let region = path.into_inner();
     let (region, count) = path.into_inner();
     if region.is_empty() {
         return HttpResponse::BadRequest().body("invalid region");
     }
-    let loaction = db.get_random_locations(region, count).await;
+    let loaction = db.get_random_locations(region, count.clone()).await;
 
     match loaction {
-        Ok(user) => HttpResponse::Ok().json(user),
+        Ok(user) => {
+            println!("get_random_locations count {}", count);
+            return HttpResponse::Ok().json(user);
+        }
         Err(err) => HttpResponse::InternalServerError().body(err.to_string()),
     }
 }
